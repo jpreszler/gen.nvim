@@ -1,6 +1,9 @@
 return {
     Generate = { prompt = "$input", replace = true },
     Chat = { prompt = "$input" },
+    Docstring = {
+        prompt = "Return a Google style python docstring for the following code. Only output the docstring.\n```python\n$text\n```",
+    },
     Summarize = { prompt = "Summarize the following text:\n$text" },
     Ask = { prompt = "Regarding the following text, $input:\n$text" },
     Change = {
@@ -39,8 +42,5 @@ return {
         prompt = "Regarding the following code, $input, only output the result in format ```$filetype\n...\n```:\n```$filetype\n$text\n```",
         replace = true,
         extract = "```$filetype\n(.-)```",
-    },
-    Google_Docstring = {
-        prompt = "Return a Google style python docstring for the following code. Only output the docstring.\n```python\n$text\n```",
     },
 }
