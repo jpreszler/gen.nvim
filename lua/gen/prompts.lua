@@ -40,4 +40,7 @@ return {
         replace = true,
         extract = "```$filetype\n(.-)```",
     },
+    Google_Docstring = {
+        prompt = "Return a Google style python docstring for the following code. Only output the docstring.\n```python\n$text\n```",
+    },
 }
