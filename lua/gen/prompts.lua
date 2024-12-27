@@ -2,7 +2,7 @@ return {
     Generate = { prompt = "$input", replace = true },
     Chat = { prompt = "$input" },
     Docstring = {
-        prompt = "Return a Google style python docstring for the following code. Only output the docstring.\n```python\n$input\n```",
+        prompt = "Return a Google style python docstring for the following code. Only output the docstring.\n```python\n$register_d\n```",
     },
     Summarize = { prompt = "Summarize the following text:\n$text" },
     Ask = { prompt = "Regarding the following text, $input:\n$text" },
