@@ -3,7 +3,7 @@
 Generate text using LLMs with customizable prompts
 
 <div align="center">
-    
+
 ![gen_nvim](https://github.com/David-Kunz/gen.nvim/assets/1009936/79f17157-9327-484a-811b-2d71ceb8fbe3)
 
 </div>
@@ -11,14 +11,14 @@ Generate text using LLMs with customizable prompts
 ## Video
 
 <div align="center">
-    
+
 [![Local LLMs in Neovim: gen.nvim](https://user-images.githubusercontent.com/1009936/273126287-7b5f2b40-c678-47c5-8f21-edf9516f6034.jpg)](https://youtu.be/FIZt7MinpMY?si=KChSuJJDyrcTdYiM)
 
 </div>
 
 ## Requires
 
-- [Ollama](https://ollama.ai/) with an appropriate model, e.g. [`llama3.1`](https://ollama.com/library/llama3.1), [`mistral`](https://ollama.ai/library/mistral), etc.
+- [Ollama](https://ollama.ai/) with an appropriate model, e.g. [`llama3.2`](https://ollama.com/library/llama3.2), [`mistral`](https://ollama.ai/library/mistral), etc.
 - [Curl](https://curl.se/)
 
 ## Install
@@ -45,8 +45,8 @@ Example with Lazy
         accept_map = "<c-cr>", -- set keymap to replace the previous selection with the last result
         host = "localhost", -- The host running the Ollama service.
         port = "11434", -- The port on which the Ollama service is listening.
-        display_mode = "float", -- The display mode. Can be "float" or "split" or "horizontal-split".
-        show_prompt = false, -- Shows the prompt submitted to Ollama.
+        display_mode = "float", -- The display mode. Can be "float" or "split" or "horizontal-split" or "vertical-split".
+        show_prompt = false, -- Shows the prompt submitted to Ollama. Can be true (3 lines) or "full".
         show_model = false, -- Displays which model you are using at the beginning of your chat session.
         no_auto_close = false, -- Never closes the window automatically.
         file = false, -- Write the payload to a temporary file to keep the command short.
@@ -62,12 +62,13 @@ Example with Lazy
         -- The executed command must return a JSON object with { response, context }
         -- (context property is optional).
         -- list_models = '<omitted lua function>', -- Retrieves a list of model names
+        result_filetype = "markdown", -- Configure filetype of the result buffer
         debug = false -- Prints errors and the command which is run.
     }
 },
 ```
 
-Here are all [available models](https://ollama.ai/library).
+Here are all [available models](https://ollama.com/library).
 
 Alternatively, you can call the `setup` function:
 
@@ -137,7 +138,7 @@ You can use the following properties per prompt:
    - `$register`: Value of the unnamed register (yanked text)
 - `replace`: `true` if the selected text shall be replaced with the generated output
 - `extract`: Regular expression used to extract the generated result
-- `model`: The model to use, e.g. `zephyr`, default: `mistral`
+- `model`: The model to use, default: `mistral`
 
 ## Tip
 

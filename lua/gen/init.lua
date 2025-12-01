@@ -52,7 +52,7 @@ local default_options = {
     retry_map = "<c-r>",
     hidden = false,
     command = function(options)
-        return "curl --silent --no-buffer -X POST http://" .. options.host ..
+        return "curl -q --silent --no-buffer -X POST http://" .. options.host ..
                    ":" .. options.port .. "/api/chat -d $body"
     end,
     json_response = true,
@@ -61,7 +61,7 @@ local default_options = {
     init = function() pcall(io.popen, "ollama serve > /dev/null 2>&1 &") end,
     list_models = function(options)
         local response = vim.fn.systemlist(
-                             "curl --silent --no-buffer http://" .. options.host ..
+                             "curl -q --silent --no-buffer http://" .. options.host ..
                                  ":" .. options.port .. "/api/tags")
         local list = vim.fn.json_decode(response)
         local models = {}
@@ -70,7 +70,8 @@ local default_options = {
         end
         table.sort(models)
         return models
-    end
+    end,
+    result_filetype = "markdown"
 }
 for k, v in pairs(default_options) do M[k] = v end
 
@@ -79,7 +80,17 @@ M.setup = function(opts) for k, v in pairs(opts) do M[k] = v end end
 local function close_window(opts)
     local lines = {}
     if opts.extract then
-        local extracted = globals.result_string:match(opts.extract)
+        local extracted
+
+        if type(opts.extract) == "function" then
+            extracted = opts.extract({
+                result_string = globals.result_string,
+                model = opts.model,
+            })
+        else
+            extracted = globals.result_string:match(opts.extract)
+        end
+
         if not extracted then
             if not opts.no_auto_close then
                 vim.api.nvim_win_hide(globals.float_win)
@@ -181,10 +192,10 @@ local function write_to_buffer(lines)
 end
 
 local function create_window(cmd, opts)
-    local function setup_split()
+    local function setup_window()
         globals.result_buffer = vim.fn.bufnr("%")
         globals.float_win = vim.fn.win_getid()
-        vim.api.nvim_set_option_value("filetype", "markdown",
+        vim.api.nvim_set_option_value("filetype", opts.result_filetype,
                                       {buf = globals.result_buffer})
         vim.api.nvim_set_option_value("buftype", "nofile",
                                       {buf = globals.result_buffer})
@@ -201,17 +212,22 @@ local function create_window(cmd, opts)
         local win_opts = vim.tbl_deep_extend("force", get_window_options(opts),
                                              opts.win_config)
         globals.result_buffer = vim.api.nvim_create_buf(false, true)
-        vim.api.nvim_set_option_value("filetype", "markdown",
-                                      {buf = globals.result_buffer})
-
         globals.float_win = vim.api.nvim_open_win(globals.result_buffer, true,
                                                   win_opts)
+        setup_window()
     elseif display_mode == "horizontal-split" then
         vim.cmd("split gen.nvim")
-        setup_split()
-    else
+        setup_window()
+    elseif display_mode == "vertical-split" then
         vim.cmd("vnew gen.nvim")
-        setup_split()
+        setup_window()
+    elseif display_mode == "no-split" then
+        vim.cmd("edit gen.nvim")
+        setup_window()
+    else
+        vim.notify("Gen.nvim warning : Invalid display mode specified.", vim.log.levels.WARN)
+        vim.cmd("edit gen.nvim")
+        setup_window()
     end
     vim.keymap.set("n", "<esc>", function()
         if globals.job_id then vim.fn.jobstop(globals.job_id) end
@@ -321,7 +337,11 @@ M.exec = function(options)
     end
 
     prompt = substitute_placeholders(prompt)
-    opts.extract = substitute_placeholders(opts.extract)
+
+    if type(opts.extract) == "string" then
+        opts.extract = substitute_placeholders(opts.extract)
+    end
+
     prompt = string.gsub(prompt, "%%", "%%%%")
 
     globals.result_string = ""
@@ -482,7 +502,7 @@ M.run_command = function(cmd, opts)
         for i = 1, #lines do
             lines[i] = "> " .. lines[i]
             table.insert(short_prompt, lines[i])
-            if i >= 3 then
+            if i >= 3 and opts.show_prompt ~= "full" then
                 if #lines > i then
                     table.insert(short_prompt, "...")
                 end
